@@ -29,19 +29,13 @@
 
 ## 安装（可选）
 
-你可以把本仓库的 `scripts/ember` 软链接到 `~/.local/bin/ember`：
+在本仓库目录中执行：
 
 ```bash
-ln -sfn /path/to/openember-cli/scripts/ember ~/.local/bin/ember
+./scripts/ember install
 ```
 
-然后使用：
-
-```bash
-ember install
-```
-
-它会把 PATH/completion 片段写入 `~/.bashrc`（与 OpenEmber/EmberLite 内置脚本行为一致）。
+它会把 `ember` 软链接安装到 `~/.local/bin/ember`（默认）并把 PATH/completion 片段写入 `~/.bashrc`（与 OpenEmber/EmberLite 内置脚本行为一致）。
 
 注意：如果你同时从多个工程执行 `ember install`，会因为全局命令名相同而互相覆盖；推荐统一只安装本仓库的 `ember`，并通过 env 管理选择目标工程。
 
