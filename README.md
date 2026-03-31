@@ -5,9 +5,9 @@
 本仓库提供：
 
 - `scripts/ember`：主命令
-- `scripts/completions/ember.bash`：bash completion
+- `scripts/completions/ember.bash`：子命令补全功能
 
-## 目录约定（方案 A）
+## 目录约定
 
 `ember` 需要定位到一个“工程根目录”，并假设该工程根目录包含：
 
@@ -151,12 +151,14 @@ ember genconfig out/build
 
 #### ember update（configure）
 
-仅配置（`cmake -S -B`）：
+配置（`cmake -S -B`）：
 
 ```bash
 ember update
 ember configure   # 兼容别名
 ```
+
+并下载或更新第三方库（如果有需要）。
 
 #### ember build
 
