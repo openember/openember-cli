@@ -99,6 +99,14 @@ ember list
 ember use emberlite
 ```
 
+#### ember del
+
+删除一个已注册的环境（如果删除的正是当前环境，会同时清空 current）：
+
+```bash
+ember del emberlite
+```
+
 #### ember current
 
 打印当前环境名（若未设置则无输出）：

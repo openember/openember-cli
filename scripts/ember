@@ -97,6 +97,26 @@ ember_env_use() {
   echo "[ember] using env: ${name}"
 }
 
+ember_env_del() {
+  local name="${1:-}"
+  if [[ -z "${name}" ]]; then
+    echo "Usage: ember del <name>" >&2
+    return 1
+  fi
+  local env_file
+  env_file="$(ember_envs_dir)/${name}"
+  if [[ ! -f "${env_file}" ]]; then
+    echo "Unknown env: ${name}" >&2
+    echo "Run: ember list" >&2
+    return 1
+  fi
+  rm -f "${env_file}"
+  if [[ "$(ember_env_current 2>/dev/null || true)" == "${name}" ]]; then
+    rm -f "$(ember_current_file)"
+  fi
+  echo "[ember] deleted env: ${name}"
+}
+
 ember_env_current_root() {
   local name root
   name="$(ember_env_current || true)"
@@ -159,6 +179,7 @@ OpenEmber CLI — Kconfig + CMake helpers
 Usage:
   ember list
   ember use <name>
+  ember del <name>
   ember current
   ember add <name> <project_root>
   ember menuconfig [build_dir]
@@ -176,6 +197,7 @@ Commands:
   add         Register an environment name -> project root (nvm-like)
   list        List registered environments
   use         Select default environment (used when not running inside project root)
+  del         Delete a registered environment (also clears current if matched)
   current     Print current environment name
   menuconfig   Interactive Kconfig UI; writes build/.config, then runs genconfig to refresh build/config.cmake
   genconfig    Map build/.config → build/config.cmake (CMake cache variables); use alone if .config was edited elsewhere
@@ -372,6 +394,9 @@ case "${cmd}" in
     ;;
   use)
     ember_env_use "${2:-}"
+    ;;
+  del)
+    ember_env_del "${2:-}"
     ;;
   current)
     ember_env_current || true
