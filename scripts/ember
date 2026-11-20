@@ -178,11 +178,16 @@ find_project_root() {
     return 0
   fi
 
-  # 2) cwd is framework or product root
-  if is_project_root "$(pwd)"; then
-    pwd
-    return 0
-  fi
+  # 2) find the workspace from its root or any subdirectory.
+  local candidate_dir="${PWD}"
+  while :; do
+    if is_project_root "${candidate_dir}"; then
+      echo "${candidate_dir}"
+      return 0
+    fi
+    [[ "${candidate_dir}" != / ]] || break
+    candidate_dir="$(dirname "${candidate_dir}")"
+  done
 
   # 3) derive from script real path (framework checkout that vendors scripts/ember)
   local self_real script_dir candidate
@@ -464,6 +469,22 @@ parse_build_options() {
   done
   ember_select_build_jobs
 }
+
+# Workspace commands are owned by the selected core checkout. Forward before
+# parsing options so the standalone installer cannot lag behind its protocol.
+# Keep installation and environment registration local to this stable entrypoint.
+case "${1:-help}" in
+  menuconfig|genconfig|defconfig|savedefconfig|update|configure|build|all|clean|run|help|-h|--help)
+    if workspace_root="$(find_project_root 2>/dev/null)"; then
+      core_cli="$(framework_root_of "${workspace_root}")/scripts/ember"
+      if [[ -f "${core_cli}" &&
+            "$(resolve_realpath "${core_cli}")" != "$(resolve_realpath "${BASH_SOURCE[0]}")" ]]; then
+        export OPENEMBER_ROOT="${workspace_root}"
+        exec bash "${core_cli}" "$@"
+      fi
+    fi
+    ;;
+esac
 
 cmd="${1:-help}"
 arg_build_dir="${2:-}"

@@ -7,6 +7,10 @@
 - `scripts/ember`：主命令
 - `scripts/completions/ember.bash`：子命令补全功能
 
+工程命令（包括 `menuconfig --product`、`defconfig`、`savedefconfig`、`update`、`build` 和 `run`）优先转发给所选工程的 OpenEmber 核心 `scripts/ember`，由该核心版本解释参数与执行构建；安装和环境注册仍由本仓库管理。工程可通过当前目录及其父目录、`OPENEMBER_ROOT` 或已选择的环境定位。安装不会把核心命令复制到本仓库，因此核心更新后无需重新复制命令实现。没有可转发的核心入口时，保留原有通用构建流程。
+
+补全在终端启动时载入。更新本仓库后，已打开的 Bash 终端执行 `source <(ember completion bash)` 即可刷新；新终端自动载入。
+
 ## 目录约定
 
 `ember` 需要定位到一个“工程根目录”，并假设该工程根目录包含：
