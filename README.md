@@ -47,7 +47,7 @@
 
 ### 快速开始
 
-在工程根目录（含 `CMakeLists.txt` 与 `scripts/kconfig/menuconfig.sh`）执行：
+在工程根目录执行（框架根：含 `CMakeLists.txt` 与 `scripts/kconfig/menuconfig.sh`；产品根：含 `CMakeLists.txt` 与 `openember/scripts/kconfig/menuconfig.sh`）：
 
 ```bash
 ./scripts/ember build
@@ -57,9 +57,11 @@
 
 ### 环境变量
 
-- **`OPENEMBER_ROOT`**：显式指定工程根目录（优先级最高）
+- **`OPENEMBER_ROOT`**：显式指定工程根目录（优先级最高；框架根或产品根）
+- **`OPENEMBER_ORIGIN`** / **`OPENEMBER_CUSTOM`**：由 `ember` 自动导出——origin=框架源码树（Kconfig srctree），custom=产品仓（若与 origin 不同）
 - **`OPENEMBER_BUILD_DIR`**：默认构建目录名（默认：`build`）
-- **`OPENEMBER_JOBS`**：并行编译任务数（默认：`nproc`）
+- **`OPENEMBER_JOBS`**：并行编译任务数（默认：可用逻辑 CPU 数的一半，向下取整，至少 1、最多 8）；`-j/--jobs` 优先
+- **`CARGO_BUILD_JOBS`**：Cargo 专用并行度覆盖值；未设置时跟随所选构建并行度
 - **`OPENEMBER_KCONFIG_NONINTERACTIVE=1`**：menuconfig 以非交互方式生成默认 `.config`
 - **`OPENEMBER_KCONFIG_FRONTENDS_DIR`**：覆盖 kconfig-frontends 解压/安装目录（否则下载到 `.kconfig-frontends/`）
 
@@ -167,6 +169,8 @@ ember configure   # 兼容别名
 ```bash
 ember build
 ember build out/build
+ember build -j 4
+ember build out/build --jobs=4
 ```
 
 行为：
@@ -174,6 +178,16 @@ ember build out/build
 - 若 `<build_dir>/.config` 不存在：自动以非交互方式生成默认配置
 - 若 `<build_dir>/config.cmake` 不存在：自动生成
 - 随后执行：`cmake -S <root> -B <build_dir>` + `cmake --build <build_dir> -j<jobs>`
+
+并行度优先级：`-j N` / `-jN` / `--jobs N` / `--jobs=N` > `OPENEMBER_JOBS` >
+`min(8, max(1, floor(可用逻辑 CPU 数 / 2)))`。显式值可超过默认的 8；
+仅接受正整数，零、负数和非整数会在配置/构建前拒绝。
+同一策略也适用于 `ember all`。
+
+CLI 向子进程传递 `CMAKE_BUILD_PARALLEL_LEVEL=<jobs>`，并在没有显式 Cargo
+覆盖值时设置 `CARGO_BUILD_JOBS=<jobs>`，避免嵌套 CMake/Cargo 沿用全核默认。
+两项有效值都会在启动时打印；这是各工具的任务并行度，不是进程树总 CPU 配额。
+这些设置属于开发机器，不写入产品 Kconfig 或 defconfig。
 
 #### ember all
 

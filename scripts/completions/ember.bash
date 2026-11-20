@@ -69,7 +69,16 @@ _ember_complete() {
 
   # For commands that accept build_dir, complete as directory paths.
   case "${words[1]}" in
-    menuconfig|genconfig|update|configure|build|all|clean)
+    build|all)
+      if [[ "${prev}" == -j || "${prev}" == --jobs ]]; then
+        COMPREPLY=( $(compgen -W "1 2 4 8 16 32" -- "${cur}") )
+      elif [[ "${cur}" == -* ]]; then
+        COMPREPLY=( $(compgen -W "-j --jobs" -- "${cur}") )
+      else
+        COMPREPLY=( $(compgen -d -- "${cur}") )
+      fi
+      ;;
+    menuconfig|genconfig|update|configure|clean)
       COMPREPLY=( $(compgen -d -- "${cur}") )
       ;;
   esac
